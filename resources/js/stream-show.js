@@ -15,100 +15,125 @@ const questionText = document.getElementById("stream-question-text");
 const imageWrapper = document.getElementById("stream-image-wrapper");
 const image = document.getElementById("stream-image");
 
-function toggle(el, show) {
-    if (!el) return;
-    el.classList.toggle("hidden", !show);
-}
+const hasStreamDom =
+    emptyState ||
+    questionCard ||
+    pausedAlert ||
+    statusBadge ||
+    progressBadge;
 
-function statusBadgeClass(status, paused = false) {
-    if (paused) return "badge badge-warning";
-
-    switch (status) {
-        case "scheduled":
-            return "badge badge-warning";
-        case "live":
-            return "badge badge-success";
-        case "ended":
-            return "badge badge-error";
-        case "draft":
-            return "badge badge-info";
-        default:
-            return "badge badge-ghost";
-    }
-}
-
-function renderState(payload) {
-    state.quiz_id = payload.quiz_id;
-    state.status = payload.status;
-    state.status_label = payload.status_label || statusLabels[payload.status] || payload.status;
-    state.paused = !!payload.paused;
-    state.current_index = payload.current_index;
-    state.total_questions = payload.total_questions;
-    state.revealed = !!payload.revealed;
-    state.question = payload.question;
-
-    toggle(pausedAlert, state.paused);
-
-    if (!state.question) {
-        toggle(emptyState, true);
-        toggle(questionCard, false);
-        return;
+if (!hasStreamDom) {
+    // Diese Seite ist keine Stream-Seite
+} else {
+    function toggle(el, show) {
+        if (!el) return;
+        el.classList.toggle("hidden", !show);
     }
 
-    toggle(emptyState, false);
-    toggle(questionCard, true);
+    function statusBadgeClass(status, paused = false) {
+        if (paused) return "badge badge-warning";
 
-    statusBadge.className = statusBadgeClass(state.status, state.paused);
-    statusBadge.textContent = state.status_label;
-
-    const currentNumber = state.current_index !== null && typeof state.current_index !== "undefined"
-        ? Number(state.current_index) + 1
-        : 0;
-
-    progressBadge.textContent = `Frage ${currentNumber}/${state.total_questions ?? 0}`;
-
-    if (state.question.points !== null && typeof state.question.points !== "undefined") {
-        pointsBadge.textContent = `${state.question.points} Punkte`;
-        toggle(pointsBadge, true);
-    } else {
-        pointsBadge.textContent = "";
-        toggle(pointsBadge, false);
+        switch (status) {
+            case "scheduled":
+                return "badge badge-warning";
+            case "live":
+                return "badge badge-success";
+            case "ended":
+                return "badge badge-error";
+            case "draft":
+                return "badge badge-info";
+            default:
+                return "badge badge-ghost";
+        }
     }
 
-    if (state.question.catalog) {
-        catalogBadge.textContent = state.question.catalog;
-        toggle(catalogBadge, true);
-    } else {
-        catalogBadge.textContent = "";
-        toggle(catalogBadge, false);
+    function renderState(payload) {
+        state.quiz_id = payload.quiz_id;
+        state.status = payload.status;
+        state.status_label = payload.status_label || statusLabels[payload.status] || payload.status;
+        state.paused = !!payload.paused;
+        state.current_index = payload.current_index;
+        state.total_questions = payload.total_questions;
+        state.revealed = !!payload.revealed;
+        state.question = payload.question;
+
+        toggle(pausedAlert, state.paused);
+
+        if (!state.question) {
+            toggle(emptyState, true);
+            toggle(questionCard, false);
+            return;
+        }
+
+        toggle(emptyState, false);
+        toggle(questionCard, true);
+
+        if (statusBadge) {
+            statusBadge.className = statusBadgeClass(state.status, state.paused);
+            statusBadge.textContent = state.status_label;
+        }
+
+        const currentNumber = state.current_index !== null && typeof state.current_index !== "undefined"
+            ? Number(state.current_index) + 1
+            : 0;
+
+        if (progressBadge) {
+            progressBadge.textContent = `Frage ${currentNumber}/${state.total_questions ?? 0}`;
+        }
+
+        if (pointsBadge) {
+            if (state.question.points !== null && typeof state.question.points !== "undefined") {
+                pointsBadge.textContent = `${state.question.points} Punkte`;
+                toggle(pointsBadge, true);
+            } else {
+                pointsBadge.textContent = "";
+                toggle(pointsBadge, false);
+            }
+        }
+
+        if (catalogBadge) {
+            if (state.question.catalog) {
+                catalogBadge.textContent = state.question.catalog;
+                toggle(catalogBadge, true);
+            } else {
+                catalogBadge.textContent = "";
+                toggle(catalogBadge, false);
+            }
+        }
+
+        if (typeBadge) {
+            if (state.question.type) {
+                typeBadge.textContent = questionTypes[state.question.type] || state.question.type;
+                toggle(typeBadge, true);
+            } else {
+                typeBadge.textContent = "";
+                toggle(typeBadge, false);
+            }
+        }
+
+        if (questionText) {
+            questionText.textContent = state.question.text || "—";
+        }
+
+        if (image && imageWrapper) {
+            if (state.question.image_url) {
+                image.src = state.question.image_url;
+                toggle(imageWrapper, true);
+            } else {
+                image.src = "";
+                toggle(imageWrapper, false);
+            }
+        }
     }
 
-    if (state.question.type) {
-        typeBadge.textContent = questionTypes[state.question.type] || state.question.type;
-        toggle(typeBadge, true);
-    } else {
-        typeBadge.textContent = "";
-        toggle(typeBadge, false);
-    }
+    renderState(state);
 
-    questionText.textContent = state.question.text || "—";
-
-    if (state.question.image_url) {
-        image.src = state.question.image_url;
-        toggle(imageWrapper, true);
-    } else {
-        image.src = "";
-        toggle(imageWrapper, false);
-    }
-}
-
-renderState(state);
-
-if (window.Echo && state.quiz_id) {
-    window.Echo.channel(`quiz.stream.${state.quiz_id}`)
-        .listen(".quiz.stream.updated", (payload) => {
-            renderState({
-                ...payload,
+    if (window.Echo && state.quiz_id) {
+        window.Echo.channel(`quiz.stream.${state.quiz_id}`)
+            .listen(".quiz.stream.updated", (payload) => {
+                renderState({
+                    ...payload,
+                });
             });
-        });
+    }
 }
