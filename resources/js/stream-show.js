@@ -22,9 +22,7 @@ const hasStreamDom =
     statusBadge ||
     progressBadge;
 
-if (!hasStreamDom) {
-    // Diese Seite ist keine Stream-Seite
-} else {
+if (hasStreamDom) {
     function toggle(el, show) {
         if (!el) return;
         el.classList.toggle("hidden", !show);
@@ -126,14 +124,36 @@ if (!hasStreamDom) {
         }
     }
 
-    renderState(state);
+    function subscribeToStream() {
+        if (!window.Echo || !state.quiz_id) {
+            return false;
+        }
 
-    if (window.Echo && state.quiz_id) {
         window.Echo.channel(`quiz.stream.${state.quiz_id}`)
             .listen(".quiz.stream.updated", (payload) => {
                 renderState({
                     ...payload,
                 });
             });
+
+        return true;
     }
+
+    renderState(state);
+
+    let tries = 0;
+    const maxTries = 50;
+
+    const interval = setInterval(() => {
+        tries++;
+
+        if (subscribeToStream()) {
+            clearInterval(interval);
+        }
+
+        if (tries >= maxTries) {
+            clearInterval(interval);
+            console.warn("Echo wurde nicht rechtzeitig gefunden.");
+        }
+    }, 200);
 }

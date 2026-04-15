@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $quiz->title }} - Stream</title>
-
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/stream-show.js'])
+    <script>
+        window.streamState = @json($streamState);
+        window.quizQuestionTypes = @json($questionTypes);
+        window.quizStatusLabels = @json(config('quiz.statuses', []));
+        window.streamStateUrl = @json(route('stream.state', $quiz));
+    </script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <style>
         html, body {
@@ -68,11 +73,6 @@
         </div>
     </div>
 
-    <script>
-        window.streamState = @json($streamState);
-        window.quizQuestionTypes = @json($questionTypes);
-        window.quizStatusLabels = @json(config('quiz.statuses', []));
-        window.streamStateUrl = @json(route('stream.state', $quiz));
-    </script>
+
 </body>
 </html>

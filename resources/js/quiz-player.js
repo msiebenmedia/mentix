@@ -34,9 +34,7 @@ const hasQuizPlayerDom =
     questionCard ||
     answerFormContainer;
 
-if (!hasQuizPlayerDom) {
-    // Diese Seite ist keine Quiz-Player-Seite
-} else {
+if (hasQuizPlayerDom) {
     function statusBadgeClass(status, paused = false) {
         if (paused) return "badge badge-warning";
 
@@ -698,14 +696,40 @@ if (!hasQuizPlayerDom) {
         bindAnswerFormAjax();
     }
 
-    renderState(state);
+    let hasSubscribed = false;
 
-    if (window.Echo && state.quiz_id) {
+    function subscribeToQuizPlayer() {
+        if (hasSubscribed || !window.Echo || !state.quiz_id) {
+            return false;
+        }
+
+        hasSubscribed = true;
+
         window.Echo.private(`quiz.${state.quiz_id}`)
             .listen(".quiz.state.updated", (payload) => {
                 renderState({
                     ...payload,
                 });
             });
+
+        return true;
     }
+
+    renderState(state);
+
+    let tries = 0;
+    const maxTries = 50;
+
+    const interval = setInterval(() => {
+        tries++;
+
+        if (subscribeToQuizPlayer()) {
+            clearInterval(interval);
+        }
+
+        if (tries >= maxTries) {
+            clearInterval(interval);
+            console.warn("Echo wurde für den Quiz-Player nicht rechtzeitig gefunden.");
+        }
+    }, 200);
 }
