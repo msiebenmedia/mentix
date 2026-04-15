@@ -233,18 +233,30 @@
             {{-- Bereits ausgewählte Fragen --}}
             <div class="card bg-base-100 shadow-xl border border-base-300 mb-6">
                 <div class="card-body">
-                    <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-                        <div>
-                            <h2 class="card-title">Ausgewählte Fragen</h2>
-                            <p class="text-sm text-base-content/70">
-                                Diese Fragen sind aktuell dem Quiz zugewiesen.
-                            </p>
-                        </div>
+<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
+    <div>
+        <h2 class="card-title">Ausgewählte Fragen</h2>
+        <p class="text-sm text-base-content/70">
+            Diese Fragen sind aktuell dem Quiz zugewiesen.
+        </p>
+    </div>
 
-                        <span class="badge badge-outline">
-                            {{ $quiz->questions->count() }} ausgewählt
-                        </span>
-                    </div>
+    <div class="flex items-center gap-2">
+        <span class="badge badge-outline">
+            {{ $quiz->questions->count() }} ausgewählt
+        </span>
+
+        @if($quiz->questions->count() > 1)
+            <form method="POST" action="{{ route('admin.quizzes.questions.shuffle', $quiz) }}">
+                @csrf
+                <button type="submit" class="btn btn-sm btn-warning">
+                    <i class="ti ti-random"></i>
+                    Zufällig sortieren
+                </button>
+            </form>
+        @endif
+    </div>
+</div>
 
                     <div class="overflow-x-auto">
                         <table class="table">

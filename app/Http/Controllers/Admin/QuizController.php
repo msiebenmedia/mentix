@@ -270,4 +270,28 @@ class QuizController extends Controller
             ->route('admin.quizzes.index')
             ->with('success', 'Quiz wurde erfolgreich gelöscht.');
     }
+    public function shuffleQuestions(Quiz $quiz)
+{
+    $questionIds = $quiz->questions()
+        ->pluck('questions.id')
+        ->shuffle()
+        ->values();
+
+    $syncData = [];
+
+    foreach ($questionIds as $index => $questionId) {
+        $syncData[$questionId] = [
+            'sort_order' => $index + 1,
+        ];
+    }
+
+    $quiz->questions()->sync($syncData);
+
+    return redirect()
+        ->route('admin.quizzes.edit', [
+            'quiz' => $quiz->id,
+            'tab' => 'questions',
+        ])
+        ->with('success', 'Fragen wurden zufällig neu sortiert.');
+}
 }
