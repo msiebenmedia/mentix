@@ -232,8 +232,8 @@
                         </div>
                     </template>
 
-                    {{-- Schätzfrage --}}
-                    <template x-if="type === 'estimate'">
+                    {{-- Schätzfrage (Nummer) --}}
+                    <template x-if="type === 'number_guess'">
                         <div>
                             <div class="divider">Schätzfrage</div>
 

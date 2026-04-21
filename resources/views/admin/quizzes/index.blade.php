@@ -1,219 +1,145 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Quizverwaltung')
+@section('title', 'Quizze')
 
 @section('content')
 <div class="min-h-screen bg-base-200 py-8 px-4">
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl mx-auto space-y-6">
 
-        <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div>
-                <h1 class="text-3xl font-bold">Quizverwaltung</h1>
+                <h1 class="text-3xl font-bold">Quizze</h1>
                 <p class="text-base-content/70 mt-1">
-                    Hier kannst du Quizze anlegen, filtern, bearbeiten, neustarten und löschen.
+                    Erstelle und verwalte deine Quizze.
                 </p>
             </div>
 
-            <div>
-                <a href="{{ route('admin.quizzes.create') }}" class="btn btn-primary">
-                    <i class="ti ti-plus"></i>
-                    Neues Quiz
-                </a>
-            </div>
+            <a href="{{ route('admin.quizzes.create') }}" class="btn btn-primary">
+                <i class="ti ti-plus"></i>
+                Neues Quiz
+            </a>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success mb-4">
+        @if (session('success'))
+            <div class="alert alert-success shadow-sm">
+                <i class="ti ti-circle-check"></i>
                 <span>{{ session('success') }}</span>
             </div>
         @endif
 
-        @if(session('error'))
-            <div class="alert alert-error mb-4">
-                <span>{{ session('error') }}</span>
-            </div>
-        @endif
-
-        {{-- Filter --}}
-        <div class="card bg-base-100 shadow-xl border border-base-300 mb-6">
+        <div class="card bg-base-100 shadow-sm border border-base-300">
             <div class="card-body">
-                <form method="GET" action="{{ route('admin.quizzes.index') }}">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-                        <div class="form-control md:col-span-2">
-                            <label class="label">
-                                <span class="label-text">Suche</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="search"
-                                value="{{ request('search') }}"
-                                placeholder="Nach Quiztitel suchen..."
-                                class="input input-bordered w-full"
-                            >
+                <form method="GET" action="{{ route('admin.quizzes.index') }}" class="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
+                    <label class="form-control w-full">
+                        <div class="label">
+                            <span class="label-text">Suche</span>
                         </div>
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ $search }}"
+                            placeholder="Nach Titel suchen..."
+                            class="input input-bordered w-full"
+                        >
+                    </label>
 
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text">Status</span>
-                            </label>
-                            <select name="status" class="select select-bordered w-full">
-                                <option value="">Alle</option>
-                                @foreach($statuses as $value => $label)
-                                    <option value="{{ $value }}" @selected(request('status') === $value)>
-                                        {{ $label }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                    </div>
-
-                    <div class="mt-4 flex justify-end gap-2">
-                        <a href="{{ route('admin.quizzes.index') }}" class="btn btn-ghost">
-                            <i class="ti ti-refresh"></i>
-                            Zurücksetzen
-                        </a>
-
+                    <div class="flex items-end gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="ti ti-search"></i>
-                            Filtern
+                            Suchen
                         </button>
+
+                        <a href="{{ route('admin.quizzes.index') }}" class="btn btn-ghost">
+                            Zurücksetzen
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
 
-        {{-- Tabelle --}}
-        <div class="card bg-base-100 shadow-xl border border-base-300">
-            <div class="card-body overflow-x-auto">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Titel</th>
-                            <th>Status</th>
-                            <th>Spieler</th>
-                            <th>Layout</th>
-                            <th>Startzeit</th>
-                            <th>Erstellt von</th>
-                            <th class="text-right">Aktion</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($quizzes as $quiz)
+        <div class="card bg-base-100 shadow-sm border border-base-300">
+            <div class="card-body p-0">
+                <div class="overflow-x-auto">
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td class="max-w-xl">
-                                    <div class="font-medium line-clamp-2">
-                                        {{ $quiz->title }}
-                                    </div>
-                                </td>
+                                <th>Titel</th>
+                                <th>Status</th>
+                                <th>Erstellt von</th>
+                                <th>Erstellt am</th>
+                                <th class="text-right">Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse ($quizzes as $quiz)
+                                @php
+$statusClasses = [
+    'draft' => 'badge badge-ghost',
+    'live' => 'badge badge-success',
+    'paused' => 'badge badge-warning',
+    'ended' => 'badge badge-error',
+];
+                                @endphp
 
-                                <td>
-                                    @php
-                                        $statusClasses = [
-                                            'draft' => 'badge badge-ghost',
-                                            'scheduled' => 'badge badge-warning',
-                                            'live' => 'badge badge-success',
-                                            'ended' => 'badge badge-error',
-                                        ];
-                                    @endphp
+                                <tr>
+                                    <td>
+                                        <div class="font-semibold">{{ $quiz->title }}</div>
 
-                                    <span class="{{ $statusClasses[$quiz->status] ?? 'badge badge-ghost' }}">
-                                        {{ $statuses[$quiz->status] ?? $quiz->status }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    <div class="flex -space-x-2 items-center">
-                                        @foreach($quiz->players->take(5) as $player)
-                                            <div class="avatar">
-                                                <div class="w-8 rounded-full bg-primary text-primary-content flex items-center justify-center text-xs">
-                                                    {{ strtoupper(substr($player->name, 0, 1)) }}
-                                                </div>
-                                            </div>
-                                        @endforeach
-
-                                        @if($quiz->players->count() > 5)
-                                            <div class="ml-3 text-xs text-base-content/60">
-                                                +{{ $quiz->players->count() - 5 }} weitere
+                                        @if ($quiz->description)
+                                            <div class="text-sm text-base-content/60 line-clamp-2">
+                                                {{ $quiz->description }}
                                             </div>
                                         @endif
-                                    </div>
-                                </td>
+                                    </td>
 
-                                <td>
-                                    <span class="badge badge-outline">
-                                        {{ $templates[$quiz->layout_template] ?? $quiz->layout_template }}
-                                    </span>
-                                </td>
-
-                                <td>
-                                    @if($quiz->starts_at)
-                                        <span class="text-sm">
-                                            {{ $quiz->starts_at->format('d.m.Y H:i') }}
+                                    <td>
+                                        <span class="{{ $statusClasses[$quiz->status] ?? 'badge badge-ghost' }}">
+                                            {{ $quiz->status_label }}
                                         </span>
-                                    @else
-                                        <span class="text-base-content/60">—</span>
-                                    @endif
-                                </td>
+                                    </td>
 
-                                <td>
-                                    {{ $quiz->creator->username ?? '—' }}
-                                </td>
+                                    <td>
+                                        {{ $quiz->creator?->name ?? 'Unbekannt' }}
+                                    </td>
 
-                                <td class="text-right">
-                                    <div class="flex justify-end gap-2">
-                                        <a href="{{ route('admin.quizzes.edit', $quiz) }}" class="btn btn-sm btn-primary">
-                                            Bearbeiten
-                                        </a>
+                                    <td>
+                                        {{ $quiz->created_at?->format('d.m.Y H:i') }}
+                                    </td>
 
-                                        <a href="{{ route('admin.quizzes.host', $quiz) }}" class="btn btn-sm">
-                                            <i class="ti ti-player-play"></i>
-                                        </a>
+                                    <td>
+                                        <div class="flex justify-end gap-2">
+                                            <a href="{{ route('admin.quizzes.edit', $quiz) }}" class="btn btn-sm btn-primary">
+                                                <i class="ti ti-pencil"></i>
+                                                Bearbeiten
+                                            </a>
 
-                                        <form
-                                            method="POST"
-                                            action="{{ route('admin.quizzes.restart', $quiz) }}"
-                                            onsubmit="return confirm('Quiz wirklich neustarten? Fortschritt und abgegebene Antworten werden zurückgesetzt.');"
-                                        >
-                                            @csrf
+                                            <form method="POST" action="{{ route('admin.quizzes.destroy', $quiz) }}" onsubmit="return confirm('Quiz wirklich löschen?');">
+                                                @csrf
+                                                @method('DELETE')
 
-                                            <button type="submit" class="btn btn-sm btn-warning" title="Quiz neustarten">
-                                                <i class="ti ti-rotate-clockwise"></i>
-                                            </button>
-                                        </form>
-
-                                        <form
-                                            method="POST"
-                                            action="{{ route('admin.quizzes.destroy', $quiz) }}"
-                                            onsubmit="return confirm('Quiz wirklich löschen?');"
-                                        >
-                                            @csrf
-                                            @method('DELETE')
-
-                                            <button type="submit" class="btn btn-sm">
-                                                <i class="ti ti-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center text-base-content/60 py-6">
-                                    Keine Quizze gefunden.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-
-                <div class="mt-4">
-                    {{ $quizzes->links() }}
+                                                <button type="submit" class="btn btn-sm btn-dark">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-10 text-base-content/60">
+                                        Noch keine Quizze vorhanden.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
+        <div>
+            {{ $quizzes->links() }}
+        </div>
     </div>
 </div>
 @endsection

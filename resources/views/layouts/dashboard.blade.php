@@ -120,15 +120,7 @@
                             <span class="sidebar-label">Fragen</span>
     </a>
 </li>
-<li>
-    <a href="{{ route('admin.quizzes.index') }}"
-                                class="sidebar-link tooltip tooltip-right {{ request()->routeIs('admin.quizzes.index') ? 'active' : '' }}"
-                            data-tip="Fragen"
-                        >
-                            <i class="ti ti-help-octagon text-lg shrink-0"></i>
-                            <span class="sidebar-label">Quizverwaltung</span>
-    </a>
-</li>
+
 @endrole
                 </ul>
             </div>

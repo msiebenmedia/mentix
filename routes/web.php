@@ -7,10 +7,9 @@ use App\Http\Controllers\Admin\UserRoleController;
 use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Admin\QuestionCatalogController;
 use App\Http\Controllers\Admin\QuestionController;
-use App\Http\Controllers\Admin\QuizController;
-use App\Http\Controllers\Admin\QuizHostController;
-use App\Http\Controllers\QuizPlayerController;
-use App\Http\Controllers\StreamController;
+use App\Http\Controllers\Admin\QuizController as AdminQuizController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +18,6 @@ use App\Http\Controllers\StreamController;
 */
 
 Route::get('/', fn () => view('welcome'));
-
-Route::get('/stream/{quiz}', [StreamController::class, 'show'])->name('stream.show');
-Route::get('/stream/{quiz}/state', [StreamController::class, 'state'])->name('stream.state');
 
 /*
 |--------------------------------------------------------------------------
@@ -36,8 +32,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profil', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profil', [ProfileController::class, 'update'])->name('profile.update');
 
-    Route::get('/quizzes/{quiz}/play', [QuizPlayerController::class, 'show'])->name('quizzes.play');
-    Route::post('/quizzes/{quiz}/answer', [QuizPlayerController::class, 'submitAnswer'])->name('quizzes.answer');
 
 });
 
@@ -62,19 +56,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::resource('question-catalogs', QuestionCatalogController::class);
     Route::resource('questions', QuestionController::class);
 
-    // Quiz Management
-    Route::resource('quizzes', QuizController::class);
-    Route::put('quizzes/{quiz}/questions', [QuizController::class, 'updateQuestions'])->name('quizzes.questions.update');
-    Route::post('quizzes/{quiz}/questions/shuffle', [QuizController::class, 'shuffleQuestions'])->name('quizzes.questions.shuffle');
-    Route::post('quizzes/{quiz}/restart', [QuizController::class, 'restart'])->name('quizzes.restart');
-
-    // Host Controls
-    Route::get('quizzes/{quiz}/host', [QuizHostController::class, 'show'])->name('quizzes.host');
-    Route::post('quizzes/{quiz}/start', [QuizHostController::class, 'start'])->name('quizzes.start');
-    Route::post('quizzes/{quiz}/pause', [QuizHostController::class, 'pause'])->name('quizzes.pause');
-    Route::post('quizzes/{quiz}/next-question', [QuizHostController::class, 'nextQuestion'])->name('quizzes.next-question');
-    Route::post('quizzes/{quiz}/previous-question', [QuizHostController::class, 'previousQuestion'])->name('quizzes.previous-question');
-    Route::post('quizzes/{quiz}/reveal-question', [QuizHostController::class, 'revealQuestion'])->name('quizzes.reveal-question');
-    Route::post('quizzes/{quiz}/finish', [QuizHostController::class, 'finish'])->name('quizzes.finish');
+    Route::resource('quizzes', AdminQuizController::class)->except(['show']);
 
 });

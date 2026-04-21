@@ -159,13 +159,13 @@
                                 </td>
 
                                 <td>
-                                    <span class="badge badge-primary">
+                                    <span class="badge badge-ghost">
                                         {{ $types[$question->type] ?? $question->type }}
                                     </span>
                                 </td>
 
                                 <td>
-                                    <span class="badge badge-secondary">
+                                    <span class="badge badge-ghost">
                                         {{ $question->points }}
                                     </span>
                                 </td>

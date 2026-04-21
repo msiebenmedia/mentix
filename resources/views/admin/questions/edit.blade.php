@@ -325,7 +325,7 @@
                                 </label>
                                 <input
                                     type="number"
-                                    step="0.01"
+                                    step="1"
                                     name="correct_numeric_answer"
                                     value="{{ old('correct_numeric_answer', $question->correct_numeric_answer) }}"
                                     class="input input-bordered w-full"
